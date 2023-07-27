@@ -67,12 +67,12 @@ def detect_and_handle_hands(img, ballPos, speedX, score, img_bat1, img_bat2, img
     img = cv2.addWeighted(img, 0.2, img_background, 0.8, 0)
 
     # Overlay bat images on hands and check for ball collision  
-    if (len(hands)==2):
-        if (hands[0]['bbox'][0]>hands[1]['bbox'][0]):
-            hands[0],hands[1]=hands[1],hands[0]
-    order=0
-    if (len(hands)==1 and hands[0]['bbox'][0]>=img_background.shape[0]/2):
-        order=1
+    if len(hands) == 2:
+        if hands[0]['bbox'][0] > hands[1]['bbox'][0]:
+            hands[0], hands[1] = hands[1], hands[0]
+    order = 0
+    if len(hands) == 1 and hands[0]['bbox'][0] >= img_background.shape[0] / 2:
+        order = 1
     if hands:
         for hand in hands:
             x, y, w, h = hand['bbox']
