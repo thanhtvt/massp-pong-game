@@ -6,11 +6,11 @@ from cvzone.HandTrackingModule import HandDetector
 
 def load_images():
     # Importing all images
-    img_background = cv2.imread("statics/Background.png")
-    img_gameover = cv2.imread("statics/gameOver.png")
-    img_ball = cv2.imread("statics/Ball.png", cv2.IMREAD_UNCHANGED)
-    img_bat1 = cv2.imread("statics/bat1.png", cv2.IMREAD_UNCHANGED)
-    img_bat2 = cv2.imread("statics/bat2.png", cv2.IMREAD_UNCHANGED)
+    img_background = cv2.imread(r"C:\Users\Nguyen Thu Huyen\massp\Background.png")
+    img_gameover = cv2.imread(r"C:\Users\Nguyen Thu Huyen\massp\gameOver.png")
+    img_ball = cv2.imread(r"C:\Users\Nguyen Thu Huyen\massp\Ball.png", cv2.IMREAD_UNCHANGED)
+    img_bat1 = cv2.imread(r"C:\Users\Nguyen Thu Huyen\massp\bat1.png", cv2.IMREAD_UNCHANGED)
+    img_bat2 = cv2.imread(r"C:\Users\Nguyen Thu Huyen\massp\bat2.png", cv2.IMREAD_UNCHANGED)
     return img_background, img_gameover, img_ball, img_bat1, img_bat2
 
 
@@ -45,10 +45,12 @@ def show_game_over(img, score):
 def move_ball(ballPos, speedX, speedY, score):
     # Move the Ball
     if ballPos[1] >= 500 or ballPos[1] <= 10:
-        speedY = -speedY
+        speedY = -speedY 
+    
 
-    ballPos[0] += speedX
-    ballPos[1] += speedY
+
+    ballPos[0] += speedX 
+    ballPos[1] += speedY 
 
     # Check for score
     if ballPos[0] < 40:
@@ -59,7 +61,7 @@ def move_ball(ballPos, speedX, speedY, score):
     return ballPos, speedY, score
 
 
-def detect_and_handle_hands(img, ballPos, speedX, score, img_bat1, img_bat2, img_background, detector):
+def detect_and_handle_hands(img, ballPos, speedX, score, img_bat1, img_bat2, img_background, detector,multiplier):
     # Find the hand and its landmarks
     hands, img = detector.findHands(img, flipType=False)  # with draw
 
@@ -77,14 +79,14 @@ def detect_and_handle_hands(img, ballPos, speedX, score, img_bat1, img_bat2, img
             if hand['type'] == "Left":
                 img = cvzone.overlayPNG(img, img_bat1, (59, y1))
                 if 59 < ballPos[0] < 59 + w1 and y1 < ballPos[1] < y1 + h1:
-                    speedX = -speedX
+                    speedX = -round(speedX* multiplier)
                     ballPos[0] += 30
                     score[0] += 1
 
             if hand['type'] == "Right":
                 img = cvzone.overlayPNG(img, img_bat2, (1195, y1))
                 if 1195 - 50 < ballPos[0] < 1195 and y1 < ballPos[1] < y1 + h1:
-                    speedX = -speedX
+                    speedX = -round(speedX * multiplier)
                     ballPos[0] -= 30
                     score[1] += 1
 
@@ -105,6 +107,7 @@ def main():
     ballPos = [100, 100]
     speedX = 15
     speedY = 15
+    multiplier = 1.1
     gameOver = False
     score = [0, 0]
 
@@ -114,7 +117,7 @@ def main():
         imgRaw = img.copy()
 
         # Detect and handle hands
-        img, ballPos, speedX, score = detect_and_handle_hands(img, ballPos, speedX, score, img_bat1, img_bat2, img_background, detector)
+        img, ballPos, speedX, score = detect_and_handle_hands(img, ballPos, speedX, score, img_bat1, img_bat2, img_background, detector,multiplier)
 
         # Check if the game is over
         if ballPos[0] < 40 or ballPos[0] > 1200:
@@ -138,7 +141,7 @@ def main():
             speedY = 15
             gameOver = False
             score = [0, 0]
-            img_gameover = cv2.imread("statics/gameOver.png")
+            img_gameover = cv2.imread(r"C:\Users\Nguyen Thu Huyen\massp\gameOver.png")
 
 
 if __name__ == "__main__":
