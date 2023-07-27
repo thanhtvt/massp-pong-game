@@ -66,7 +66,13 @@ def detect_and_handle_hands(img, ballPos, speedX, score, img_bat1, img_bat2, img
     # Overlaying the background image
     img = cv2.addWeighted(img, 0.2, img_background, 0.8, 0)
 
-    # Overlay bat images on hands and check for ball collision
+    # Overlay bat images on hands and check for ball collision  
+    if (len(hands)==2):
+        if (hands[0]['bbox'][0]>hands[1]['bbox'][0]):
+            hands[0],hands[1]=hands[1],hands[0]
+    order=0
+    if (len(hands)==1 and hands[0]['bbox'][0]>=img_background.shape[0]/2):
+        order=1
     if hands:
         for hand in hands:
             x, y, w, h = hand['bbox']
@@ -74,19 +80,20 @@ def detect_and_handle_hands(img, ballPos, speedX, score, img_bat1, img_bat2, img
             y1 = y - h1 // 2
             y1 = np.clip(y1, 20, 415)
 
-            if hand['type'] == "Left":
+            if order==0:
                 img = cvzone.overlayPNG(img, img_bat1, (59, y1))
                 if 59 < ballPos[0] < 59 + w1 and y1 < ballPos[1] < y1 + h1:
                     speedX = -speedX
                     ballPos[0] += 30
                     score[0] += 1
 
-            if hand['type'] == "Right":
+            if order==1:
                 img = cvzone.overlayPNG(img, img_bat2, (1195, y1))
                 if 1195 - 50 < ballPos[0] < 1195 and y1 < ballPos[1] < y1 + h1:
                     speedX = -speedX
                     ballPos[0] -= 30
                     score[1] += 1
+            order+=1
 
     return img, ballPos, speedX, score
 
