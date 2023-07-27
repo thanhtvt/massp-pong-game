@@ -47,8 +47,8 @@ def move_ball(ballPos, speedX, speedY, score):
     if ballPos[1] >= 500 or ballPos[1] <= 10:
         speedY = -speedY
 
-    ballPos[0] += speedX + 10
-    ballPos[1] += speedY + 5
+    ballPos[0] += speedX
+    ballPos[1] += speedY
 
     # Check for score
     if ballPos[0] < 40:
