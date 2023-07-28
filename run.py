@@ -3,7 +3,6 @@ import cvzone
 import numpy as np
 from cvzone.HandTrackingModule import HandDetector
 
-
 def load_images():
     # Importing all images
     img_background = cv2.imread("statics/Background.png")
@@ -30,6 +29,14 @@ def draw_scoreboard(img, score):
                 color=(255, 255, 255),
                 thickness=5)
 
+def draw_countdown(img,seconds,losed_time,wb,hb):
+    cv2.putText(img,
+                text=str(3-seconds+losed_time),
+                org=(wb,hb+100),
+                fontFace=cv2.FONT_HERSHEY_COMPLEX,
+                fontScale=3,
+                color=(0, 0, 0),
+                thickness=5)
 
 def show_game_over(img, score):
     cv2.putText(img,
@@ -42,7 +49,11 @@ def show_game_over(img, score):
     return img
 
 
-def move_ball(ballPos, speedX, speedY, score):
+def move_ball(ballPos, speedX, speedY, score,seconds,losed,losed_time):
+    if (losed==1):
+        if (seconds-losed_time>3):
+            losed=0
+        else: return ballPos,speedY,score,losed
     # Move the Ball
     if ballPos[1] >= 500 or ballPos[1] <= 10:
         speedY = -speedY
@@ -50,13 +61,7 @@ def move_ball(ballPos, speedX, speedY, score):
     ballPos[0] += speedX
     ballPos[1] += speedY
 
-    # Check for score
-    """if ballPos[0] < 40:
-        score[1] += 1
-    elif ballPos[0] > 1200:
-        score[0] += 1"""
-
-    return ballPos, speedY, score
+    return ballPos, speedY, score,losed
 
 
 def detect_and_handle_hands(img, ballPos, speedX, score, img_bat1, img_bat2,
@@ -72,7 +77,7 @@ def detect_and_handle_hands(img, ballPos, speedX, score, img_bat1, img_bat2,
         if hands[0]['bbox'][0] > hands[1]['bbox'][0]:
             hands[0], hands[1] = hands[1], hands[0]
     order = 0
-    if len(hands) == 1 and hands[0]['bbox'][0] >= img_background.shape[0] / 2:
+    if len(hands) == 1 and hands[0]['bbox'][0] >= img_background.shape[1] / 2:
         order = 1
     if hands:
         for hand in hands:
@@ -96,7 +101,6 @@ def detect_and_handle_hands(img, ballPos, speedX, score, img_bat1, img_bat2,
 
     return img, ballPos, speedX, score
 
-
 def main():
     cap = cv2.VideoCapture(0)
     cap.set(3, 1280)
@@ -108,9 +112,13 @@ def main():
     detector = HandDetector(detectionCon=0.8, maxHands=2)
 
     # Variables
-    wb=img_background.shape[0]
-    hb=img_background.shape[1]
-    ballPos = [100,100]
+    ticks=0
+    FPS=30
+    losed=1
+    losed_time=0
+    hb=img_background.shape[0]//2
+    wb=img_background.shape[1]//2
+    ballPos = [wb,hb]
     speedX = 15
     speedY = 15
     multiplier = 1.1
@@ -118,6 +126,8 @@ def main():
     score = [0, 0]
 
     while True:
+        ticks+=1
+        seconds=ticks // FPS
         _, img = cap.read()
         img = cv2.flip(img, 1)
         imgRaw = img.copy()
@@ -130,21 +140,29 @@ def main():
         # Check if the game is over
         if ballPos[0] <40:
             score[1]+=1
-            ballPos = [100,100]
+            losed=1
+            losed_time=seconds
+            ballPos = [wb,hb]
+
             speedX=-speedX
         if ballPos[0] >= 1200:
+            losed=1
+            losed_time=seconds
             score[0]+=1
-            ballPos = [1100,100]
+            ballPos = [wb,hb]
             speedX=-speedX
-        if (score[0]==2 or score[1]==2):
+        if (score[0]==3 or score[1]==3):
             gameOver=1
         if gameOver:
             img = show_game_over(img_gameover, score)
         else:
-            ballPos, speedY, score = move_ball(ballPos, speedX, speedY, score)
+            ballPos, speedY, score, losed= move_ball(ballPos, speedX, speedY, score,seconds,losed,losed_time)
             img = cvzone.overlayPNG(img, img_ball, ballPos)
 
             draw_scoreboard(img, score)
+            
+            if (losed):
+                draw_countdown(img,seconds,losed_time,wb,hb)
 
         img[580:700, 20:233] = cv2.resize(imgRaw, (213, 120))
 
@@ -157,6 +175,7 @@ def main():
             gameOver = False
             score = [0, 0]
             img_gameover = cv2.imread("statics/gameOver.png")
+    print(losed_time)
 
 
 if __name__ == "__main__":
