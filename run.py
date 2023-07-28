@@ -23,7 +23,7 @@ def draw_scoreboard(img, score):
                 color=(255, 255, 255),
                 thickness=5)
     cv2.putText(img,
-                text=str(score[0]),
+                text=str(score[1]),
                 org=(900, 650),
                 fontFace=cv2.FONT_HERSHEY_COMPLEX,
                 fontScale=3,
@@ -85,14 +85,12 @@ def detect_and_handle_hands(img, ballPos, speedX, score, img_bat1, img_bat2, img
                 if 59 < ballPos[0] < 59 + w1 and y1 < ballPos[1] < y1 + h1:
                     speedX = -speedX
                     ballPos[0] += 30
-                    score[0] += 1
 
             if order==1:
                 img = cvzone.overlayPNG(img, img_bat2, (1195, y1))
                 if 1195 - 50 < ballPos[0] < 1195 and y1 < ballPos[1] < y1 + h1:
                     speedX = -speedX
                     ballPos[0] -= 30
-                    score[1] += 1
             order+=1
 
     return img, ballPos, speedX, score
@@ -111,7 +109,7 @@ def main():
     # Variables
     wb=img_background.shape[0]
     hb=img_background.shape[1]
-    ballPos = [int(wb/2),int(hb/2)]
+    ballPos = [100,100]
     speedX = 15
     speedY = 15
     gameOver = False
@@ -126,13 +124,13 @@ def main():
         img, ballPos, speedX, score = detect_and_handle_hands(img, ballPos, speedX, score, img_bat1, img_bat2, img_background, detector)
 
         # Check if the game is over
-        if ballPos[0] <=0:
+        if ballPos[0] <40:
             score[1]+=1
-            ballPos = [int(wb/2),int(hb/2)]
+            ballPos = [100,100]
             speedX=-speedX
-        if ballPos[0] >= 1250:
+        if ballPos[0] >= 1200:
             score[0]+=1
-            ballPos = [int(wb/2),int(hb/2)]
+            ballPos = [1100,100]
             speedX=-speedX
         if (score[0]+score[1]==3):
             gameOver=1
