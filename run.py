@@ -70,7 +70,7 @@ def move_ball(ballPos, speedX, speedY, score, seconds, losed, losed_time):
     return ballPos, speedY, score, losed
 
 
-def detect_and_handle_hands(img, ballPos, speedX, score, img_bat1, img_bat2,
+def detect_and_handle_hands(img, ballPos, speedX, speedY, score, img_bat1, img_bat2,
                             img_background, detector, multiplier):
     # Find the hand and its landmarks
     hands, img = detector.findHands(img, flipType=False)
@@ -99,12 +99,23 @@ def detect_and_handle_hands(img, ballPos, speedX, score, img_bat1, img_bat2,
                 if 59 < ballPos[0] < 59 + w1 and y1 < ballPos[1] < y1 + h1:
                     speedX = -round(speedX * multiplier)
                     ballPos[0] += 30
+                elif 59 > ballPos[0]:
+                    
+                    y_new = ballPos[1] +  speedY*(60-ballPos[0])/speedX;
+                    if y1 < y_new < y1 + h1:
+                        speedX = -round(speedX * multiplier)
+                        ballPos[0] += 30
 
             if order == 1:
                 img = cvzone.overlayPNG(img, img_bat2, (1195, y1))
                 if 1195 - 50 < ballPos[0] < 1195 and y1 < ballPos[1] < y1 + h1:
                     speedX = -round(speedX * multiplier)
                     ballPos[0] -= 30
+                elif ballPos[0] > 1195:
+                    y_new = ballPos[1] + speedY*(ballPos[0]-1194)/speedX;
+                    if y1 < ballPos[1] < y1 + h1:
+                        speedX = -round(speedX * multiplier)
+                        ballPos[0] -= 30
             order += 1
 
     return img, ballPos, speedX, score
@@ -129,7 +140,9 @@ def main():
     wb = img_background.shape[1] // 2 - 20
     ballPos = [wb, hb]
     speedX = 15
-    speedY = 15
+    speedY = -10
+    initial_speedX = speedX
+    initial_speedY = speedY
     multiplier = 1.1
     gameOver = False
     score = [0, 0]
@@ -143,7 +156,7 @@ def main():
 
         # Detect and handle hands
         img, ballPos, speedX, score = detect_and_handle_hands(
-            img, ballPos, speedX, score, img_bat1, img_bat2, img_background,
+            img, ballPos, speedX, speedY, score, img_bat1, img_bat2, img_background,
             detector, multiplier)
 
         # Check if the game is over
@@ -153,13 +166,17 @@ def main():
             losed_time = seconds
             ballPos = [wb, hb]
 
-            speedX = -speedX
+            # speedX = -speedX
+            speedX = initial_speedX
+            speedY = initial_speedY
         if ballPos[0] >= 1200:
             losed = 1
             losed_time = seconds
             score[0] += 1
             ballPos = [wb, hb]
-            speedX = -speedX
+            # speedX = -speedX
+            speedX = -initial_speedX
+            speedY = -initial_speedY
         if score[0] == 3 or score[1] == 3:
             gameOver = 1
             show_game_over(img)
