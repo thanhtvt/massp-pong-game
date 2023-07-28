@@ -9,8 +9,8 @@ def load_images():
     img_background = cv2.imread("statics/Background.png")
     img_gameover = cv2.imread("statics/gameOver.png")
     img_ball = cv2.imread("statics/Ball.png", cv2.IMREAD_UNCHANGED)
-    img_bat1 = cv2.imread("statics/bat2_new.png", cv2.IMREAD_UNCHANGED)
-    img_bat2 = cv2.imread("statics/bat2_new.png", cv2.IMREAD_UNCHANGED)
+    img_bat1 = cv2.imread("statics/bat.png", cv2.IMREAD_UNCHANGED)
+    img_bat2 = cv2.imread("statics/bat.png", cv2.IMREAD_UNCHANGED)
     return img_background, img_gameover, img_ball, img_bat1, img_bat2
 
 
