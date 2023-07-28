@@ -9,8 +9,8 @@ def load_images():
     img_background = cv2.imread("statics/Background.png")
     img_gameover = cv2.imread("statics/gameOver.png")
     img_ball = cv2.imread("statics/Ball.png", cv2.IMREAD_UNCHANGED)
-    img_bat1 = cv2.imread("statics/bat2.png", cv2.IMREAD_UNCHANGED)
-    img_bat2 = cv2.imread("statics/bat2.png", cv2.IMREAD_UNCHANGED)
+    img_bat1 = cv2.imread("statics/bat2_new.png", cv2.IMREAD_UNCHANGED)
+    img_bat2 = cv2.imread("statics/bat2_new.png", cv2.IMREAD_UNCHANGED)
     return img_background, img_gameover, img_ball, img_bat1, img_bat2
 
 
@@ -132,7 +132,7 @@ def main():
             score[0]+=1
             ballPos = [1100,100]
             speedX=-speedX
-        if (score[0]+score[1]==3):
+        if (score[0]==2 or score[1]==2):
             gameOver=1
         if gameOver:
             img = show_game_over(img_gameover, score)
