@@ -1,6 +1,7 @@
 import cv2
 import cvzone
 import numpy as np
+import random
 from cvzone.HandTrackingModule import HandDetector
 
 def load_images():
@@ -29,22 +30,22 @@ def draw_scoreboard(img, score):
                 color=(255, 255, 255),
                 thickness=5)
 
-def draw_countdown(img,seconds,losed_time,wb,hb):
+def draw_countdown(img,seconds,losed_time):
     cv2.putText(img,
                 text=str(3-seconds+losed_time),
-                org=(wb,hb+100),
+                org=(600,650),
                 fontFace=cv2.FONT_HERSHEY_COMPLEX,
                 fontScale=3,
-                color=(0, 0, 0),
+                color=(0,144,255),
                 thickness=5)
 
-def show_game_over(img, score):
+def show_game_over(img):
     cv2.putText(img,
-                text=str(score[1] + score[0]).zfill(2),
-                org=(585, 360),
+                text=str("GAME OVER"),
+                org=(360, 120),
                 fontFace=cv2.FONT_HERSHEY_COMPLEX,
-                fontScale=2.5,
-                color=(200, 0, 200),
+                fontScale=3,
+                color=(0,144,255),
                 thickness=5)
     return img
 
@@ -116,8 +117,8 @@ def main():
     FPS=30
     losed=1
     losed_time=0
-    hb=img_background.shape[0]//2
-    wb=img_background.shape[1]//2
+    hb=img_background.shape[0]//2 + 50
+    wb=img_background.shape[1]//2 - 20
     ballPos = [wb,hb]
     speedX = 15
     speedY = 15
@@ -153,8 +154,7 @@ def main():
             speedX=-speedX
         if (score[0]==3 or score[1]==3):
             gameOver=1
-        if gameOver:
-            img = show_game_over(img_gameover, score)
+            show_game_over(img)
         else:
             ballPos, speedY, score, losed= move_ball(ballPos, speedX, speedY, score,seconds,losed,losed_time)
             img = cvzone.overlayPNG(img, img_ball, ballPos)
@@ -162,20 +162,19 @@ def main():
             draw_scoreboard(img, score)
             
             if (losed):
-                draw_countdown(img,seconds,losed_time,wb,hb)
+                draw_countdown(img,seconds,losed_time)
 
         img[580:700, 20:233] = cv2.resize(imgRaw, (213, 120))
 
         cv2.imshow("Image", img)
         key = cv2.waitKey(1)
         if key == ord('r'):
-            ballPos = [100, 100]
+            ballPos = [wb,hb]
             speedX = 15
             speedY = 15
             gameOver = False
             score = [0, 0]
             img_gameover = cv2.imread("statics/gameOver.png")
-    print(losed_time)
 
 
 if __name__ == "__main__":
