@@ -9,7 +9,7 @@ def load_images():
     img_background = cv2.imread("statics/Background.png")
     img_gameover = cv2.imread("statics/gameOver.png")
     img_ball = cv2.imread("statics/Ball.png", cv2.IMREAD_UNCHANGED)
-    img_bat1 = cv2.imread("statics/bat1.png", cv2.IMREAD_UNCHANGED)
+    img_bat1 = cv2.imread("statics/bat2.png", cv2.IMREAD_UNCHANGED)
     img_bat2 = cv2.imread("statics/bat2.png", cv2.IMREAD_UNCHANGED)
     return img_background, img_gameover, img_ball, img_bat1, img_bat2
 
@@ -51,10 +51,10 @@ def move_ball(ballPos, speedX, speedY, score):
     ballPos[1] += speedY
 
     # Check for score
-    if ballPos[0] < 40:
+    """if ballPos[0] < 40:
         score[1] += 1
     elif ballPos[0] > 1200:
-        score[0] += 1
+        score[0] += 1"""
 
     return ballPos, speedY, score
 
@@ -109,7 +109,9 @@ def main():
     detector = HandDetector(detectionCon=0.8, maxHands=2)
 
     # Variables
-    ballPos = [100, 100]
+    wb=img_background.shape[0]
+    hb=img_background.shape[1]
+    ballPos = [int(wb/2),int(hb/2)]
     speedX = 15
     speedY = 15
     gameOver = False
@@ -124,9 +126,16 @@ def main():
         img, ballPos, speedX, score = detect_and_handle_hands(img, ballPos, speedX, score, img_bat1, img_bat2, img_background, detector)
 
         # Check if the game is over
-        if ballPos[0] < 40 or ballPos[0] > 1200:
-            gameOver = True
-
+        if ballPos[0] <=0:
+            score[1]+=1
+            ballPos = [int(wb/2),int(hb/2)]
+            speedX=-speedX
+        if ballPos[0] >= 1250:
+            score[0]+=1
+            ballPos = [int(wb/2),int(hb/2)]
+            speedX=-speedX
+        if (score[0]+score[1]==3):
+            gameOver=1
         if gameOver:
             img = show_game_over(img_gameover, score)
         else:
