@@ -10,8 +10,8 @@ def load_images():
     img_background = cv2.imread("statics/Background.png")
     img_gameover = cv2.imread("statics/gameOver.png")
     img_ball = cv2.imread("statics/Ball.png", cv2.IMREAD_UNCHANGED)
-    img_bat1 = cv2.imread("statics/bat.png", cv2.IMREAD_UNCHANGED)
-    img_bat2 = cv2.imread("statics/bat.png", cv2.IMREAD_UNCHANGED)
+    img_bat1 = cv2.imread("statics/bat2.png", cv2.IMREAD_UNCHANGED)
+    img_bat2 = cv2.imread("statics/bat2.png", cv2.IMREAD_UNCHANGED)
     return img_background, img_gameover, img_ball, img_bat1, img_bat2
 
 
@@ -71,7 +71,7 @@ def move_ball(ballPos, speedX, speedY, score, seconds, losed, losed_time):
 
 
 def detect_and_handle_hands(img, ballPos, speedX, speedY, score, img_bat1, img_bat2,
-                            img_background, detector, multiplier):
+                            img_background, detector, multiplier, init_speedX):
     # Find the hand and its landmarks
     hands, img = detector.findHands(img, flipType=False)
 
@@ -96,26 +96,37 @@ def detect_and_handle_hands(img, ballPos, speedX, speedY, score, img_bat1, img_b
 
             if order == 0:
                 img = cvzone.overlayPNG(img, img_bat1, (59, y1))
-                if 59 < ballPos[0] < 59 + w1 and y1 < ballPos[1] < y1 + h1:
+                if (59 < ballPos[0] < 59 + w1 and \
+                    y1 < ballPos[1] < y1 + h1) or \
+                        (59 < ballPos[0] < 59 + w1 and y1 < ballPos[1] + 50 < y1 + h1):
                     speedX = -round(speedX * multiplier)
-                    ballPos[0] += 30
+                    if abs(speedX) >= 50:
+                        speedX = 50
+                    ballPos[0] += 50
                 elif 59 > ballPos[0]:
                     
-                    y_new = ballPos[1] +  speedY*(60-ballPos[0])/speedX;
-                    if y1 < y_new < y1 + h1:
+                    y_new = ballPos[1] +  speedY*(59+w1-ballPos[0])/speedX
+                    if y1 < y_new < y1 + h1 or y1 <y_new + 50 < y1+h1:
                         speedX = -round(speedX * multiplier)
-                        ballPos[0] += 30
+                        if abs(speedX) >= 50:
+                            speedX = 50
+                        ballPos[0] += 50
 
             if order == 1:
                 img = cvzone.overlayPNG(img, img_bat2, (1195, y1))
-                if 1195 - 50 < ballPos[0] < 1195 and y1 < ballPos[1] < y1 + h1:
+                if (1195 < ballPos[0]+50 < 1195 + w1 and y1 < ballPos[1] < y1 + h1) or \
+                (1195 < ballPos[0] + 50< 1195 + w1 and y1 < ballPos[1] + 50 < y1 + h1):
                     speedX = -round(speedX * multiplier)
-                    ballPos[0] -= 30
-                elif ballPos[0] > 1195:
-                    y_new = ballPos[1] + speedY*(ballPos[0]-1194)/speedX;
-                    if y1 < ballPos[1] < y1 + h1:
+                    if abs(speedX) >= 50:
+                        speedX = -50
+                    ballPos[0] -= 50
+                elif ballPos[0] + 50 > 1195+w1:
+                    y_new = ballPos[1]-speedY*(ballPos[0]+50-1195)/speedX
+                    if y1 < y_new< y1 + h1 or y1 < y_new + 50< y1 + h1:
                         speedX = -round(speedX * multiplier)
-                        ballPos[0] -= 30
+                        if abs(speedX) >= 50:
+                            speedX = -50
+                        ballPos[0] -= 50
             order += 1
 
     return img, ballPos, speedX, score
@@ -157,7 +168,7 @@ def main():
         # Detect and handle hands
         img, ballPos, speedX, score = detect_and_handle_hands(
             img, ballPos, speedX, speedY, score, img_bat1, img_bat2, img_background,
-            detector, multiplier)
+            detector, multiplier, initial_speedX)
 
         # Check if the game is over
         if ballPos[0] < 40:
@@ -184,7 +195,26 @@ def main():
             ballPos, speedY, score, losed = move_ball(ballPos, speedX, speedY,
                                                       score, seconds, losed,
                                                       losed_time)
-            img = cvzone.overlayPNG(img, img_ball, ballPos)
+            try:
+                img = cvzone.overlayPNG(img, img_ball, ballPos)
+            except:
+                if ballPos[0] < 40:
+                    score[1] += 1
+                    losed = 1
+                    losed_time = seconds
+                    ballPos = [wb, hb]
+
+                    # speedX = -speedX
+                    speedX = initial_speedX
+                    speedY = initial_speedY
+                if ballPos[0] >= 1200:
+                    losed = 1
+                    losed_time = seconds
+                    score[0] += 1
+                    ballPos = [wb, hb]
+                    # speedX = -speedX
+                    speedX = -initial_speedX
+                    speedY = -initial_speedY
 
             draw_scoreboard(img, score)
 
